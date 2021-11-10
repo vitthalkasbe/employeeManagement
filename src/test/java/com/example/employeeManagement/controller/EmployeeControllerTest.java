@@ -3,17 +3,13 @@ package com.example.employeeManagement.controller;
 import com.example.employeeManagement.entity.Employee;
 import com.example.employeeManagement.exception.EmployeeNotFoundException;
 import com.example.employeeManagement.service.EmployeeService;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
-import org.springframework.validation.BindingResult;
-import org.springframework.web.context.request.RequestContextHolder;
-import org.springframework.web.context.request.ServletRequestAttributes;
-import javax.servlet.http.HttpServletRequest;
+
 import javax.validation.ConstraintViolation;
 import javax.validation.Validation;
 import javax.validation.Validator;
@@ -22,6 +18,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.doNothing;
@@ -35,22 +32,12 @@ public class EmployeeControllerTest {
     @Mock
     private EmployeeService service;
 
-    @Mock
-    private HttpServletRequest request;
-
-    @Mock
-    private BindingResult mockBindingResult;
-
-    @BeforeEach
-    public void setUp() {
-        RequestContextHolder.setRequestAttributes(new ServletRequestAttributes(request));
-    }
 
     @Test
     public void shouldReturnStatusOKWhenGetEmployees() {
         //given
-        List<Employee> givenEmployeeList = Arrays.asList(new Employee(1L, "vitthal", "kasbe", "vitthalkasbe@okvks"),
-                new Employee(2L, "vikas", "kamble", "vilaskamble@okvks"));
+        List<Employee> givenEmployeeList = Arrays.asList(new Employee(1L, "vitthal", "kasbe", "vitthalkasbe@okvks", null),
+                new Employee(2L, "vikas", "kamble", "vilaskamble@okvks", null));
 
         //when
         when(service.getEmployees()).thenReturn(givenEmployeeList);
@@ -67,14 +54,14 @@ public class EmployeeControllerTest {
 
     @Test
     public void shouldReturnOKWhenEmployeeByIdIsPresent() {
-        Employee employee = new Employee(1L, "vitthal", "kasbe", "vitthalkasbe@okvks");
+        Employee employee = new Employee(1L, "vitthal", "kasbe", "vitthalkasbe@okvks", null);
         when(service.findEmployeeById(1L)).thenReturn(Optional.of(employee));
         assertEquals(HttpStatus.OK, controller.getEmployeeById(1L).getStatusCode());
     }
 
     @Test
     public void shouldReturnCreatedWhenSaveEmployeeCalled() {
-        Employee givenEmployee = new Employee(1L, "vitthal", "kasbe", "vitthalkasbe@okvks");
+        Employee givenEmployee = new Employee(1L, "vitthal", "kasbe", "vitthalkasbe@okvks", null);
         when(service.saveEmployee(givenEmployee)).thenReturn(givenEmployee);
 
         assertEquals(HttpStatus.CREATED, controller.saveEmployee(givenEmployee).getStatusCode());
@@ -83,7 +70,7 @@ public class EmployeeControllerTest {
 
     @Test
     public void shouldReturnOKWhenEmployeeUpdated() {
-        Employee givenEmployee = new Employee(1L, "vitthal", "kasbe", "vitthalkasbe@okvks");
+        Employee givenEmployee = new Employee(1L, "vitthal", "kasbe", "vitthalkasbe@okvks", null);
         when(service.saveEmployee(givenEmployee)).thenReturn(givenEmployee);
         when(service.findEmployeeById(1L)).thenReturn(Optional.of(givenEmployee));
         assertEquals(HttpStatus.OK, controller.updateEmployee(1L, givenEmployee).getStatusCode());
@@ -91,8 +78,10 @@ public class EmployeeControllerTest {
 
     @Test
     public void shouldThrowBindingErrorWhenWrongDataProvided() {
-        Employee givenEmployee = new Employee(1L, null, null, "vitthalkasbe@okvks");
+        Employee givenEmployee = new Employee(1L, null, null, "vitthalkasbe@okvks", null);
+        //build validator factory
         ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
+        //get validator
         Validator validator = factory.getValidator();
 
         // Validate the object

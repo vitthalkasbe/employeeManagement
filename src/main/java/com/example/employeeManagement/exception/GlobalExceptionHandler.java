@@ -25,10 +25,17 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
     protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex, HttpHeaders headers, HttpStatus status, WebRequest request) {
 
-            List<String> bindingErrors = ex.getBindingResult().getFieldErrors().stream().map(e -> e.getDefaultMessage()).collect(Collectors.toList());
-            ApiResponse apiResponse = new ApiResponse("Validation failed for user fields", bindingErrors.toString(), LocalDateTime.now());
+        List<String> bindingErrors = ex.getBindingResult().getFieldErrors().stream().map(e -> e.getDefaultMessage()).collect(Collectors.toList());
+        ApiResponse apiResponse = new ApiResponse("Validation failed for user fields", bindingErrors.toString(), LocalDateTime.now());
 
-            return new ResponseEntity<>(apiResponse, HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(apiResponse, HttpStatus.BAD_REQUEST);
 
+    }
+
+    @ExceptionHandler(DepartmentNotFoundException.class)
+    public ResponseEntity<Object> handleDepartmentNotFoundException(DepartmentNotFoundException departmentNotFoundException, WebRequest request) {
+        ApiResponse apiResponse = new ApiResponse(departmentNotFoundException.getMessage(), request.getDescription(false), LocalDateTime.now());
+
+        return new ResponseEntity<Object>(apiResponse, HttpStatus.NOT_FOUND);
     }
 }
